@@ -110,6 +110,7 @@
                         <th class="border p-2 text-left">Product</th>
                         <th class="border p-2 text-left">Quantity</th>
                         <th class="border p-2 text-left">Amount</th>
+                        <th class="border p-2 text-left">Customer</th> <!-- Added Customer column -->
                     </tr>
                 </thead>
                 <tbody id="cash-ledger-body"></tbody>
@@ -213,7 +214,7 @@
                 product,
                 quantity,
                 amount,
-                customer: customerName
+                customer: customerName // Add customer to transaction
             };
 
             let ledger = JSON.parse(localStorage.getItem(`${paymentMethod}-ledger`)) || [];
@@ -242,6 +243,7 @@
                     <td class="border p-2">${transaction.product}</td>
                     <td class="border p-2">${transaction.quantity}</td>
                     <td class="border p-2">$${transaction.amount.toFixed(2)}</td>
+                    <td class="border p-2">${transaction.customer}</td> <!-- Display Customer -->
                 `;
                 cashLedgerBody.appendChild(row);
             });
