@@ -24,6 +24,8 @@
                 onclick="showPage('cash-ledger')">Cash Ledger</button>
             <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
                 onclick="showPage('momo-ledger')">Momo Ledger</button>
+            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
+                onclick="showPage('sales-ledger')">Sales Ledger</button>
         </div>
 
         <!-- Summary Page -->
@@ -55,9 +57,7 @@
             <form id="sales-form" class="space-y-4">
                 <div>
                     <label for="product" class="block text-sm">Product</label>
-                    <select id="product" class="border p-2 rounded w-full" required>
-                        <!-- Product options will be dynamically added here -->
-                    </select>
+                    <select id="product" class="border p-2 rounded w-full" required></select>
                 </div>
                 <div>
                     <label for="quantity" class="block text-sm">Quantity</label>
@@ -70,11 +70,13 @@
                         <option value="momo">Mobile Money</option>
                     </select>
                 </div>
+                <div id="momo-id-field" class="hidden">
+                    <label for="momo-id" class="block text-sm">Momo Pay ID</label>
+                    <input id="momo-id" type="text" class="border p-2 rounded w-full" />
+                </div>
                 <div>
                     <label for="customer" class="block text-sm">Customer</label>
-                    <select id="customer" class="border p-2 rounded w-full" required>
-                        <!-- Customer dropdown options will be dynamically added here -->
-                    </select>
+                    <select id="customer" class="border p-2 rounded w-full" required></select>
                 </div>
                 <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">Record
                     Sale</button>
@@ -87,9 +89,7 @@
             <form id="stock-management-form">
                 <div>
                     <label for="stock-product" class="block text-sm">Product</label>
-                    <select id="stock-product" class="border p-2 rounded w-full" required>
-                        <!-- Product options will be dynamically added here -->
-                    </select>
+                    <select id="stock-product" class="border p-2 rounded w-full" required></select>
                 </div>
                 <div>
                     <label for="add-stock-quantity" class="block text-sm">Quantity to Add</label>
@@ -110,7 +110,7 @@
                         <th class="border p-2 text-left">Product</th>
                         <th class="border p-2 text-left">Quantity</th>
                         <th class="border p-2 text-left">Amount</th>
-                        <th class="border p-2 text-left">Customer</th> <!-- Added Customer column -->
+                        <th class="border p-2 text-left">Customer</th>
                     </tr>
                 </thead>
                 <tbody id="cash-ledger-body"></tbody>
@@ -127,9 +127,30 @@
                         <th class="border p-2 text-left">Product</th>
                         <th class="border p-2 text-left">Quantity</th>
                         <th class="border p-2 text-left">Amount</th>
+                        <th class="border p-2 text-left">Customer</th>
+                        <th class="border p-2 text-left">Momo Pay ID</th>
                     </tr>
                 </thead>
                 <tbody id="momo-ledger-body"></tbody>
+            </table>
+        </section>
+
+        <!-- Sales Ledger Page -->
+        <section id="sales-ledger" class="section-content mb-12 hidden">
+            <h1 class="text-3xl font-semibold mb-4">Sales Ledger</h1>
+            <table id="sales-ledger-table" class="w-full mt-4 border-collapse">
+                <thead>
+                    <tr>
+                        <th class="border p-2 text-left">Date</th>
+                        <th class="border p-2 text-left">Product</th>
+                        <th class="border p-2 text-left">Quantity</th>
+                        <th class="border p-2 text-left">Amount</th>
+                        <th class="border p-2 text-left">Payment</th>
+                        <th class="border p-2 text-left">Customer</th>
+                        <th class="border p-2 text-left">Momo Pay ID</th>
+                    </tr>
+                </thead>
+                <tbody id="sales-ledger-body"></tbody>
             </table>
         </section>
 
@@ -138,11 +159,9 @@
             <button id="add-customer-button" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">Add
                 Customer</button>
         </div>
-
     </div>
 
     <script>
-        // List of products
         const products = [
             { name: "6kg LPG Cylinder", unitPrice: 50, stock: 100 },
             { name: "12kg LPG Cylinder", unitPrice: 100, stock: 50 },
@@ -154,20 +173,16 @@
             { name: "Nitrogen", unitPrice: 15, stock: 180 }
         ];
 
-        // Helper function to show pages
         function showPage(pageId) {
-            const pages = ['summary', 'sales', 'stock', 'cash-ledger', 'momo-ledger'];
-            pages.forEach(page => {
-                document.getElementById(page).classList.add('hidden');
-            });
+            const pages = ['summary', 'sales', 'stock', 'cash-ledger', 'momo-ledger', 'sales-ledger'];
+            pages.forEach(page => document.getElementById(page).classList.add('hidden'));
             document.getElementById(pageId).classList.remove('hidden');
         }
 
-        // Load product options for sales and stock management
         function loadProductOptions() {
             const productSelects = document.querySelectorAll('#product, #stock-product');
             productSelects.forEach(select => {
-                select.innerHTML = '<option value="">Select Product</option>'; // Clear previous options
+                select.innerHTML = '<option value="">Select Product</option>';
                 products.forEach(product => {
                     const option = document.createElement('option');
                     option.value = product.name;
@@ -177,12 +192,10 @@
             });
         }
 
-        // Load customer names from localStorage into the dropdown
         function loadCustomers() {
             const customers = JSON.parse(localStorage.getItem('customers')) || [];
             const customerDropdown = document.getElementById('customer');
-            customerDropdown.innerHTML = '<option value="">Select Customer</option>'; // Clear previous options
-
+            customerDropdown.innerHTML = '<option value="">Select Customer</option>';
             customers.forEach(customer => {
                 const option = document.createElement('option');
                 option.value = customer.name;
@@ -191,7 +204,6 @@
             });
         }
 
-        // Add a new customer to localStorage
         function addCustomer(name) {
             let customers = JSON.parse(localStorage.getItem('customers')) || [];
             customers.push({ name });
@@ -199,71 +211,62 @@
             loadCustomers();
         }
 
-        // Update the stock of a product
         function updateStock(productName, quantity) {
             const product = products.find(p => p.name === productName);
-            if (product) {
-                product.stock += quantity;
-            }
+            if (product) product.stock += quantity;
         }
 
-        // Record a transaction to the ledger
-        function recordTransaction(paymentMethod, product, quantity, amount, customerName) {
+        function recordTransaction(paymentMethod, product, quantity, amount, customerName, momoId = '') {
             const transaction = {
                 date: new Date().toLocaleString(),
                 product,
                 quantity,
                 amount,
-                customer: customerName // Add customer to transaction
+                customer: customerName,
+                payment: paymentMethod,
+                momoId: momoId || ''
             };
-
             let ledger = JSON.parse(localStorage.getItem(`${paymentMethod}-ledger`)) || [];
             ledger.push(transaction);
             localStorage.setItem(`${paymentMethod}-ledger`, JSON.stringify(ledger));
 
-            // Update the UI for ledgers
             updateLedgers();
         }
 
-        // Update the UI for both ledgers
         function updateLedgers() {
-            // Get the cash and momo ledgers from localStorage
             const cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
             const momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
+            const allSales = [...cashLedger, ...momoLedger];
 
-            const cashLedgerBody = document.getElementById('cash-ledger-body');
-            const momoLedgerBody = document.getElementById('momo-ledger-body');
-            cashLedgerBody.innerHTML = '';
-            momoLedgerBody.innerHTML = '';
+            const cashBody = document.getElementById('cash-ledger-body');
+            const momoBody = document.getElementById('momo-ledger-body');
+            const salesBody = document.getElementById('sales-ledger-body');
+            cashBody.innerHTML = '';
+            momoBody.innerHTML = '';
+            salesBody.innerHTML = '';
 
-            cashLedger.forEach(transaction => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border p-2">${transaction.date}</td>
-                    <td class="border p-2">${transaction.product}</td>
-                    <td class="border p-2">${transaction.quantity}</td>
-                    <td class="border p-2">$${transaction.amount.toFixed(2)}</td>
-                    <td class="border p-2">${transaction.customer}</td> <!-- Display Customer -->
+            cashLedger.forEach(t => {
+                cashBody.innerHTML += `
+                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.customer}</td></tr>
                 `;
-                cashLedgerBody.appendChild(row);
             });
 
-            momoLedger.forEach(transaction => {
-                const row = document.createElement('tr');
-                row.innerHTML = `
-                    <td class="border p-2">${transaction.date}</td>
-                    <td class="border p-2">${transaction.product}</td>
-                    <td class="border p-2">${transaction.quantity}</td>
-                    <td class="border p-2">$${transaction.amount.toFixed(2)}</td>
+            momoLedger.forEach(t => {
+                momoBody.innerHTML += `
+                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.customer}</td><td class="border p-2">${t.momoId}</td></tr>
                 `;
-                momoLedgerBody.appendChild(row);
+            });
+
+            allSales.forEach(t => {
+                salesBody.innerHTML += `
+                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.payment}</td><td class="border p-2">${t.customer}</td><td class="border p-2">${t.momoId || '-'}</td></tr>
+                `;
             });
         }
 
-        // Update the product stock display on the summary page
         function updateStockDisplay() {
             const productStockDiv = document.getElementById('product-stock');
-            productStockDiv.innerHTML = ''; // Clear previous content
+            productStockDiv.innerHTML = '';
             products.forEach(product => {
                 const productDiv = document.createElement('div');
                 productDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md');
@@ -275,60 +278,56 @@
             });
         }
 
-        // Initialize the page
         function init() {
             loadProductOptions();
             loadCustomers();
             updateStockDisplay();
+            updateLedgers();
         }
 
-        // Call init on page load
         window.onload = init;
 
-        // Handle sales form submission
+        document.getElementById('payment-method').addEventListener('change', (e) => {
+            const momoField = document.getElementById('momo-id-field');
+            momoField.classList.toggle('hidden', e.target.value !== 'momo');
+        });
+
         document.getElementById('sales-form').addEventListener('submit', (e) => {
             e.preventDefault();
-
             const product = document.getElementById('product').value;
             const quantity = parseInt(document.getElementById('quantity').value);
             const paymentMethod = document.getElementById('payment-method').value;
-            const customerName = document.getElementById('customer').value;
+            const customer = document.getElementById('customer').value;
+            const momoId = document.getElementById('momo-id').value || '';
 
             const productData = products.find(p => p.name === product);
-            if (productData && quantity > 0 && customerName) {
-                const totalAmount = productData.unitPrice * quantity;
-
-                // Update stock
+            if (productData && quantity > 0 && customer) {
+                const amount = productData.unitPrice * quantity;
                 updateStock(product, -quantity);
-
-                // Record transaction
-                recordTransaction(paymentMethod, product, quantity, totalAmount, customerName);
-
-                // Update display
+                recordTransaction(paymentMethod, product, quantity, amount, customer, momoId);
                 updateStockDisplay();
-                alert(`Sale recorded! Amount: $${totalAmount.toFixed(2)}`);
+                alert(`Sale recorded! Amount: $${amount.toFixed(2)}`);
             } else {
                 alert('Invalid form input');
             }
         });
 
-        // Handle stock management form submission
         document.getElementById('stock-management-form').addEventListener('submit', (e) => {
             e.preventDefault();
-
             const product = document.getElementById('stock-product').value;
             const quantity = parseInt(document.getElementById('add-stock-quantity').value);
-
             if (product && quantity > 0) {
-                // Update stock
                 updateStock(product, quantity);
-
-                // Update display
                 updateStockDisplay();
                 alert(`Stock added! Product: ${product}, Quantity: ${quantity}`);
             } else {
                 alert('Invalid stock input');
             }
+        });
+
+        document.getElementById('add-customer-button').addEventListener('click', () => {
+            const name = prompt('Enter customer name:');
+            if (name) addCustomer(name);
         });
     </script>
 </body>
