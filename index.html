@@ -2,8 +2,8 @@
 <html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Gas Store Management</title>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
@@ -11,7 +11,6 @@
 <body class="bg-gray-100 font-sans">
     <!-- Main Container -->
     <div class="max-w-7xl mx-auto p-8">
-
         <!-- Navigation -->
         <div class="mb-4">
             <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
@@ -45,9 +44,15 @@
                     <p id="momo-balance" class="text-lg">$0.00</p>
                 </div>
             </div>
-            <div class="mt-4">
-                <h2 class="text-xl font-semibold text-gray-700">Product Stock</h2>
+
+            <div class="mt-6 bg-white p-4 rounded shadow-md">
+                <h2 class="text-xl font-semibold mb-2">Current Product Stock</h2>
                 <div id="product-stock"></div>
+            </div>
+
+            <div class="mt-6 bg-white p-4 rounded shadow-md">
+                <h2 class="text-xl font-semibold mb-2">Business Starting Inventory - Cylinders Sold</h2>
+                <div id="inventory-minus-sold"></div>
             </div>
         </section>
 
@@ -62,6 +67,10 @@
                 <div>
                     <label for="quantity" class="block text-sm">Quantity</label>
                     <input id="quantity" type="number" class="border p-2 rounded w-full" required />
+                </div>
+                <div>
+                    <label for="discount" class="block text-sm">Discount (%)</label>
+                    <input id="discount" type="number" class="border p-2 rounded w-full" min="0" max="100" value="0" />
                 </div>
                 <div>
                     <label for="payment-method" class="block text-sm">Payment Method</label>
@@ -86,16 +95,17 @@
         <!-- Stock Management Page -->
         <section id="stock" class="section-content mb-12 hidden">
             <h1 class="text-3xl font-semibold mb-4">Stock Management</h1>
-            <form id="stock-management-form">
+            <form id="stock-management-form" class="mb-4">
                 <div>
                     <label for="stock-product" class="block text-sm">Product</label>
                     <select id="stock-product" class="border p-2 rounded w-full" required></select>
+                    <p class="mt-1 text-sm text-gray-600" id="current-stock-display">Current Stock: 0 units</p>
                 </div>
                 <div>
                     <label for="add-stock-quantity" class="block text-sm">Quantity to Add</label>
                     <input id="add-stock-quantity" type="number" class="border p-2 rounded w-full" required />
                 </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">Add
+                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500 mt-2">Add
                     Stock</button>
             </form>
         </section>
@@ -111,6 +121,7 @@
                         <th class="border p-2 text-left">Quantity</th>
                         <th class="border p-2 text-left">Amount</th>
                         <th class="border p-2 text-left">Customer</th>
+                        <th class="border p-2 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody id="cash-ledger-body"></tbody>
@@ -129,6 +140,7 @@
                         <th class="border p-2 text-left">Amount</th>
                         <th class="border p-2 text-left">Customer</th>
                         <th class="border p-2 text-left">Momo Pay ID</th>
+                        <th class="border p-2 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody id="momo-ledger-body"></tbody>
@@ -148,6 +160,7 @@
                         <th class="border p-2 text-left">Payment</th>
                         <th class="border p-2 text-left">Customer</th>
                         <th class="border p-2 text-left">Momo Pay ID</th>
+                        <th class="border p-2 text-left">Action</th>
                     </tr>
                 </thead>
                 <tbody id="sales-ledger-body"></tbody>
@@ -156,179 +169,365 @@
 
         <!-- Add Customer Button -->
         <div class="mt-4">
-            <button id="add-customer-button" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">Add
+            <button id="add-customer-button" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500">Add
                 Customer</button>
         </div>
     </div>
 
     <script>
+        // Initial product list with starting stock and unit price
         const products = [
-            { name: "6kg LPG Cylinder", unitPrice: 50, stock: 100 },
-            { name: "12kg LPG Cylinder", unitPrice: 100, stock: 50 },
-            { name: "15kg LPG Cylinder", unitPrice: 125, stock: 30 },
-            { name: "20kg LPG Cylinder", unitPrice: 150, stock: 20 },
-            { name: "50kg LPG Cylinder", unitPrice: 300, stock: 10 },
-            { name: "Oxygen", unitPrice: 10, stock: 200 },
-            { name: "CO2", unitPrice: 20, stock: 150 },
-            { name: "Nitrogen", unitPrice: 15, stock: 180 }
+            { name: 'Cylinder A', unitPrice: 100, stock: 50, startingInventory: 50 },
+            { name: 'Cylinder B', unitPrice: 125, stock: 75, startingInventory: 75 },
         ];
 
-        function showPage(pageId) {
-            const pages = ['summary', 'sales', 'stock', 'cash-ledger', 'momo-ledger', 'sales-ledger'];
-            pages.forEach(page => document.getElementById(page).classList.add('hidden'));
-            document.getElementById(pageId).classList.remove('hidden');
+        // Initialize customers storage if empty
+        if (!localStorage.getItem('customers')) localStorage.setItem('customers', JSON.stringify([]));
+        if (!localStorage.getItem('cash-ledger')) localStorage.setItem('cash-ledger', JSON.stringify([]));
+        if (!localStorage.getItem('momo-ledger')) localStorage.setItem('momo-ledger', JSON.stringify([]));
+        if (!localStorage.getItem('sales-ledger')) localStorage.setItem('sales-ledger', JSON.stringify([]));
+
+        // Show page helper
+        function showPage(page) {
+            document.querySelectorAll('.section-content').forEach(sec => sec.classList.add('hidden'));
+            document.getElementById(page).classList.remove('hidden');
+            if (page === 'summary') {
+                updateStockDisplay();
+                updateSummary();
+                updateInventoryMinusSold();
+            }
+            if (page === 'cash-ledger' || page === 'momo-ledger' || page === 'sales-ledger') {
+                updateLedgers();
+            }
+            if (page === 'stock') {
+                updateCurrentStockDisplay();
+            }
         }
 
-        function loadProductOptions() {
-            const productSelects = document.querySelectorAll('#product, #stock-product');
-            productSelects.forEach(select => {
-                select.innerHTML = '<option value="">Select Product</option>';
-                products.forEach(product => {
-                    const option = document.createElement('option');
-                    option.value = product.name;
-                    option.textContent = product.name;
-                    select.appendChild(option);
+        // Populate product selects
+        function populateProductSelects() {
+            ['product', 'stock-product'].forEach(id => {
+                const sel = document.getElementById(id);
+                sel.innerHTML = '';
+                products.forEach(p => {
+                    const opt = document.createElement('option');
+                    opt.value = p.name;
+                    opt.textContent = p.name;
+                    sel.appendChild(opt);
                 });
             });
         }
 
+        // Load customers to selects
         function loadCustomers() {
             const customers = JSON.parse(localStorage.getItem('customers')) || [];
-            const customerDropdown = document.getElementById('customer');
-            customerDropdown.innerHTML = '<option value="">Select Customer</option>';
-            customers.forEach(customer => {
-                const option = document.createElement('option');
-                option.value = customer.name;
-                option.textContent = customer.name;
-                customerDropdown.appendChild(option);
+            ['customer'].forEach(id => {
+                const sel = document.getElementById(id);
+                sel.innerHTML = '';
+                customers.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.name;
+                    opt.textContent = c.name;
+                    sel.appendChild(opt);
+                });
             });
         }
 
-        function addCustomer(name) {
-            let customers = JSON.parse(localStorage.getItem('customers')) || [];
-            customers.push({ name });
-            localStorage.setItem('customers', JSON.stringify(customers));
-            loadCustomers();
+        // Update stock display on summary page
+        function updateStockDisplay() {
+            const stockDiv = document.getElementById('product-stock');
+            stockDiv.innerHTML = '';
+            products.forEach(p => {
+                const pElem = document.createElement('p');
+                pElem.textContent = `${p.name}: ${p.stock} units`;
+                stockDiv.appendChild(pElem);
+            });
         }
 
-        function updateStock(productName, quantity) {
+        // Update Current Stock display on Stock Management page
+        function updateCurrentStockDisplay() {
+            const productSelect = document.getElementById('stock-product');
+            const stockDisplay = document.getElementById('current-stock-display');
+            const selectedProduct = products.find(p => p.name === productSelect.value);
+            stockDisplay.textContent = `Current Stock: ${selectedProduct ? selectedProduct.stock : 0} units`;
+        }
+
+        // Update stock quantity
+        function updateStock(productName, quantityChange) {
             const product = products.find(p => p.name === productName);
-            if (product) product.stock += quantity;
+            if (product) {
+                product.stock += quantityChange;
+                if (product.stock < 0) product.stock = 0;
+            }
         }
 
-        function recordTransaction(paymentMethod, product, quantity, amount, customerName, momoId = '') {
-            const transaction = {
-                date: new Date().toLocaleString(),
-                product,
-                quantity,
-                amount,
-                customer: customerName,
-                payment: paymentMethod,
-                momoId: momoId || ''
-            };
-            let ledger = JSON.parse(localStorage.getItem(`${paymentMethod}-ledger`)) || [];
-            ledger.push(transaction);
-            localStorage.setItem(`${paymentMethod}-ledger`, JSON.stringify(ledger));
+        // Record transaction helper
+        function recordTransaction(paymentMethod, product, quantity, amount, customer, momoId = '') {
+            const date = new Date().toLocaleString();
+            const transaction = { id: generateId(), date, product, quantity, amount, customer, momoId };
 
+            // Save to sales ledger
+            let salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
+            salesLedger.push({ ...transaction, paymentMethod });
+            localStorage.setItem('sales-ledger', JSON.stringify(salesLedger));
+
+            if (paymentMethod === 'cash') {
+                let cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
+                cashLedger.push(transaction);
+                localStorage.setItem('cash-ledger', JSON.stringify(cashLedger));
+            } else if (paymentMethod === 'momo') {
+                let momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
+                momoLedger.push(transaction);
+                localStorage.setItem('momo-ledger', JSON.stringify(momoLedger));
+            }
+        }
+
+        // Generate unique id for transactions
+        function generateId() {
+            return '_' + Math.random().toString(36).substr(2, 9);
+        }
+
+        // Update ledger tables with delete buttons
+        function updateLedgers() {
+            // Cash ledger
+            const cashLedgerBody = document.getElementById('cash-ledger-body');
+            const cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
+            cashLedgerBody.innerHTML = '';
+            cashLedger.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td class="border p-2">${t.date}</td>
+                <td class="border p-2">${t.product}</td>
+                <td class="border p-2">${t.quantity}</td>
+                <td class="border p-2">$${t.amount.toFixed(2)}</td>
+                <td class="border p-2">${t.customer}</td>
+                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('cash', '${t.id}')">Delete</button></td>
+                `;
+                cashLedgerBody.appendChild(tr);
+            });
+
+            // Momo ledger
+            const momoLedgerBody = document.getElementById('momo-ledger-body');
+            const momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
+            momoLedgerBody.innerHTML = '';
+            momoLedger.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td class="border p-2">${t.date}</td>
+                <td class="border p-2">${t.product}</td>
+                <td class="border p-2">${t.quantity}</td>
+                <td class="border p-2">$${t.amount.toFixed(2)}</td>
+                <td class="border p-2">${t.customer}</td>
+                <td class="border p-2">${t.momoId}</td>
+                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('momo', '${t.id}')">Delete</button></td>
+                `;
+                momoLedgerBody.appendChild(tr);
+            });
+
+            // Sales ledger
+            const salesLedgerBody = document.getElementById('sales-ledger-body');
+            const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
+            salesLedgerBody.innerHTML = '';
+            salesLedger.forEach(t => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                <td class="border p-2">${t.date}</td>
+                <td class="border p-2">${t.product}</td>
+                <td class="border p-2">${t.quantity}</td>
+                <td class="border p-2">$${t.amount.toFixed(2)}</td>
+                <td class="border p-2">${t.paymentMethod}</td>
+                <td class="border p-2">${t.customer}</td>
+                <td class="border p-2">${t.momoId || ''}</td>
+                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('sales', '${t.id}')">Delete</button></td>
+                `;
+                salesLedgerBody.appendChild(tr);
+            });
+
+            updateSummary();
+            updateInventoryMinusSold();
+            updateStockDisplay();
+            updateCurrentStockDisplay();
+        }
+
+        // Delete transaction helper
+        function deleteTransaction(ledgerType, transactionId) {
+            if (!confirm('Are you sure you want to delete this transaction?')) return;
+
+            // Remove from ledger arrays
+            let ledger = JSON.parse(localStorage.getItem(`${ledgerType}-ledger`)) || [];
+            const transaction = ledger.find(t => t.id === transactionId);
+            if (!transaction) {
+                alert('Transaction not found.');
+                return;
+            }
+
+            ledger = ledger.filter(t => t.id !== transactionId);
+            localStorage.setItem(`${ledgerType}-ledger`, JSON.stringify(ledger));
+
+            // Also remove from sales-ledger if ledgerType is cash or momo
+            if (ledgerType === 'cash' || ledgerType === 'momo') {
+                let salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
+                salesLedger = salesLedger.filter(t => t.id !== transactionId);
+                localStorage.setItem('sales-ledger', JSON.stringify(salesLedger));
+            } else if (ledgerType === 'sales') {
+                // Delete also from cash or momo ledger if exists
+                let cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
+                let momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
+                cashLedger = cashLedger.filter(t => t.id !== transactionId);
+                momoLedger = momoLedger.filter(t => t.id !== transactionId);
+                localStorage.setItem('cash-ledger', JSON.stringify(cashLedger));
+                localStorage.setItem('momo-ledger', JSON.stringify(momoLedger));
+            }
+
+            // Revert stock
+            updateStock(transaction.product, transaction.quantity);
+
+            alert('Transaction deleted and stock updated.');
             updateLedgers();
         }
 
-        function updateLedgers() {
+        // Update Summary totals
+        function updateSummary() {
             const cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
             const momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
-            const allSales = [...cashLedger, ...momoLedger];
+            const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
 
-            const cashBody = document.getElementById('cash-ledger-body');
-            const momoBody = document.getElementById('momo-ledger-body');
-            const salesBody = document.getElementById('sales-ledger-body');
-            cashBody.innerHTML = '';
-            momoBody.innerHTML = '';
-            salesBody.innerHTML = '';
+            const totalSales = salesLedger.reduce((acc, t) => acc + t.amount, 0);
+            const cashBalance = cashLedger.reduce((acc, t) => acc + t.amount, 0);
+            const momoBalance = momoLedger.reduce((acc, t) => acc + t.amount, 0);
 
-            cashLedger.forEach(t => {
-                cashBody.innerHTML += `
-                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.customer}</td></tr>
-                `;
-            });
-
-            momoLedger.forEach(t => {
-                momoBody.innerHTML += `
-                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.customer}</td><td class="border p-2">${t.momoId}</td></tr>
-                `;
-            });
-
-            allSales.forEach(t => {
-                salesBody.innerHTML += `
-                    <tr><td class="border p-2">${t.date}</td><td class="border p-2">${t.product}</td><td class="border p-2">${t.quantity}</td><td class="border p-2">$${t.amount.toFixed(2)}</td><td class="border p-2">${t.payment}</td><td class="border p-2">${t.customer}</td><td class="border p-2">${t.momoId || '-'}</td></tr>
-                `;
-            });
+            document.getElementById('total-sales').textContent = `$${totalSales.toFixed(2)}`;
+            document.getElementById('cash-balance').textContent = `$${cashBalance.toFixed(2)}`;
+            document.getElementById('momo-balance').textContent = `$${momoBalance.toFixed(2)}`;
         }
 
-        function updateStockDisplay() {
-            const productStockDiv = document.getElementById('product-stock');
-            productStockDiv.innerHTML = '';
+        // Show Business Starting Inventory - Cylinders Sold
+        function updateInventoryMinusSold() {
+            const div = document.getElementById('inventory-minus-sold');
+            div.innerHTML = '';
+
             products.forEach(product => {
-                const productDiv = document.createElement('div');
-                productDiv.classList.add('bg-white', 'p-4', 'rounded-lg', 'shadow-md');
-                productDiv.innerHTML = `
-                    <h3 class="text-lg font-semibold">${product.name}</h3>
-                    <p class="text-sm">Stock: ${product.stock}</p>
-                `;
-                productStockDiv.appendChild(productDiv);
+                const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
+                const totalSold = salesLedger
+                    .filter(t => t.product === product.name)
+                    .reduce((acc, t) => acc + t.quantity, 0);
+                const remaining = product.startingInventory - totalSold;
+                const pElem = document.createElement('p');
+                pElem.textContent = `${product.name}: ${remaining} units remaining (Starting: ${product.startingInventory}, Sold: ${totalSold})`;
+                div.appendChild(pElem);
             });
         }
 
-        function init() {
-            loadProductOptions();
-            loadCustomers();
-            updateStockDisplay();
-            updateLedgers();
-        }
-
-        window.onload = init;
-
-        document.getElementById('payment-method').addEventListener('change', (e) => {
-            const momoField = document.getElementById('momo-id-field');
-            momoField.classList.toggle('hidden', e.target.value !== 'momo');
-        });
-
-        document.getElementById('sales-form').addEventListener('submit', (e) => {
+        // Handle sales form submission
+        document.getElementById('sales-form').addEventListener('submit', e => {
             e.preventDefault();
-            const product = document.getElementById('product').value;
+
+            const productName = document.getElementById('product').value;
             const quantity = parseInt(document.getElementById('quantity').value);
+            const discountPercent = parseFloat(document.getElementById('discount').value) || 0;
             const paymentMethod = document.getElementById('payment-method').value;
+            const momoId = document.getElementById('momo-id').value.trim();
             const customer = document.getElementById('customer').value;
-            const momoId = document.getElementById('momo-id').value || '';
 
-            const productData = products.find(p => p.name === product);
-            if (productData && quantity > 0 && customer) {
-                const amount = productData.unitPrice * quantity;
-                updateStock(product, -quantity);
-                recordTransaction(paymentMethod, product, quantity, amount, customer, momoId);
-                updateStockDisplay();
-                alert(`Sale recorded! Amount: $${amount.toFixed(2)}`);
-            } else {
-                alert('Invalid form input');
+            if (quantity <= 0) {
+                alert('Quantity must be greater than 0.');
+                return;
             }
+
+            const product = products.find(p => p.name === productName);
+            if (!product) {
+                alert('Invalid product selected.');
+                return;
+            }
+
+            if (quantity > product.stock) {
+                alert('Not enough stock available.');
+                return;
+            }
+
+            // Calculate amount with discount
+            const priceBeforeDiscount = product.unitPrice * quantity;
+            const discountAmount = priceBeforeDiscount * (discountPercent / 100);
+            const amount = priceBeforeDiscount - discountAmount;
+
+            if (paymentMethod === 'momo' && !momoId) {
+                alert('Momo Pay ID is required for Mobile Money payments.');
+                return;
+            }
+
+            // Deduct stock
+            updateStock(productName, -quantity);
+
+            // Record transaction
+            recordTransaction(paymentMethod, productName, quantity, amount, customer, momoId);
+
+            alert('Sale recorded successfully.');
+
+            e.target.reset();
+            document.getElementById('momo-id-field').classList.add('hidden');
+            updateStockDisplay();
+            updateCurrentStockDisplay();
+            updateSummary();
+            updateInventoryMinusSold();
+            updateLedgers();
         });
 
-        document.getElementById('stock-management-form').addEventListener('submit', (e) => {
+        // Handle stock form submission
+        document.getElementById('stock-management-form').addEventListener('submit', e => {
             e.preventDefault();
-            const product = document.getElementById('stock-product').value;
-            const quantity = parseInt(document.getElementById('add-stock-quantity').value);
-            if (product && quantity > 0) {
-                updateStock(product, quantity);
-                updateStockDisplay();
-                alert(`Stock added! Product: ${product}, Quantity: ${quantity}`);
+            const productName = document.getElementById('stock-product').value;
+            const quantityToAdd = parseInt(document.getElementById('add-stock-quantity').value);
+
+            if (quantityToAdd <= 0) {
+                alert('Quantity to add must be greater than 0.');
+                return;
+            }
+
+            updateStock(productName, quantityToAdd);
+            alert(`Added ${quantityToAdd} units to ${productName}.`);
+            e.target.reset();
+            updateCurrentStockDisplay();
+            updateStockDisplay();
+            updateInventoryMinusSold();
+        });
+
+        // Show or hide Momo Pay ID field
+        document.getElementById('payment-method').addEventListener('change', e => {
+            if (e.target.value === 'momo') {
+                document.getElementById('momo-id-field').classList.remove('hidden');
             } else {
-                alert('Invalid stock input');
+                document.getElementById('momo-id-field').classList.add('hidden');
             }
         });
 
+        // Add customer functionality
         document.getElementById('add-customer-button').addEventListener('click', () => {
             const name = prompt('Enter customer name:');
-            if (name) addCustomer(name);
+            if (!name) return alert('Customer name is required.');
+
+            const customers = JSON.parse(localStorage.getItem('customers')) || [];
+            if (customers.find(c => c.name.toLowerCase() === name.toLowerCase())) {
+                return alert('Customer already exists.');
+            }
+
+            customers.push({ name });
+            localStorage.setItem('customers', JSON.stringify(customers));
+            alert('Customer added.');
+            loadCustomers();
         });
+
+        // Update current stock display when product changes in stock form
+        document.getElementById('stock-product').addEventListener('change', () => {
+            updateCurrentStockDisplay();
+        });
+
+        // Initialization on page load
+        window.onload = () => {
+            populateProductSelects();
+            loadCustomers();
+            showPage('summary');
+            updateLedgers();
+        };
     </script>
 </body>
 
