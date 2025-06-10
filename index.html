@@ -8,527 +8,624 @@
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
-<body class="bg-gray-100 font-sans">
-    <!-- Main Container -->
-    <div class="max-w-7xl mx-auto p-8">
-        <!-- Navigation -->
-        <div class="mb-4">
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('summary')">Summary</button>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('sales')">Sales</button>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('stock')">Stock</button>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('cash-ledger')">Cash Ledger</button>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('momo-ledger')">Momo Ledger</button>
-            <button class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-500"
-                onclick="showPage('sales-ledger')">Sales Ledger</button>
-        </div>
+<body class="bg-gray-100 min-h-screen p-6 font-sans">
+    <h1 class="text-3xl font-bold mb-6 text-center">Gas Store Management</h1>
 
-        <!-- Summary Page -->
-        <section id="summary" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Store Summary</h1>
-            <div class="grid grid-cols-2 gap-8">
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold text-gray-700">Total Sales</h2>
-                    <p id="total-sales" class="text-lg">$0.00</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold text-gray-700">Cash Balance</h2>
-                    <p id="cash-balance" class="text-lg">$0.00</p>
-                </div>
-                <div class="bg-white p-6 rounded-lg shadow-md">
-                    <h2 class="text-xl font-semibold text-gray-700">Mobile Money Balance</h2>
-                    <p id="momo-balance" class="text-lg">$0.00</p>
-                </div>
-            </div>
+    <div class="max-w-6xl mx-auto space-y-10">
 
-            <div class="mt-6 bg-white p-4 rounded shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Current Product Stock</h2>
-                <div id="product-stock"></div>
-            </div>
-
-            <div class="mt-6 bg-white p-4 rounded shadow-md">
-                <h2 class="text-xl font-semibold mb-2">Business Starting Inventory - Cylinders Sold</h2>
-                <div id="inventory-minus-sold"></div>
+        <!-- Stock Management -->
+        <section class="bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Stock Management</h2>
+            <form id="stock-management-form" class="flex flex-wrap gap-4 items-end">
+                <div>
+                    <label for="stock-product" class="block font-medium mb-1">Product</label>
+                    <input list="product-list" id="stock-product" name="stock-product" required
+                        class="border border-gray-300 rounded p-2 w-48" />
+                    <datalist id="product-list"></datalist>
+                </div>
+                <div>
+                    <label for="add-stock-quantity" class="block font-medium mb-1">Add Quantity</label>
+                    <input type="number" id="add-stock-quantity" name="add-stock-quantity" min="1" required
+                        class="border border-gray-300 rounded p-2 w-28" />
+                </div>
+                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded">Add
+                    Stock</button>
+            </form>
+            <div class="mt-6">
+                <h3 class="font-semibold mb-2">Current Stock Summary</h3>
+                <table class="w-full border border-gray-300 rounded overflow-hidden">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="border border-gray-300 px-3 py-1 text-left">Product</th>
+                            <th class="border border-gray-300 px-3 py-1 text-right">Starting Inventory</th>
+                            <th class="border border-gray-300 px-3 py-1 text-right">Added Stock</th>
+                            <th class="border border-gray-300 px-3 py-1 text-right">Sold Cylinders</th>
+                            <th class="border border-gray-300 px-3 py-1 text-right">Current Stock</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-summary-body"></tbody>
+                </table>
             </div>
         </section>
 
-        <!-- Sales Page -->
-        <section id="sales" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Sales</h1>
-            <form id="sales-form" class="space-y-4">
+        <!-- Record Sale -->
+        <section class="bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Record Sale</h2>
+            <form id="sales-form" class="flex flex-wrap gap-4 items-end">
                 <div>
-                    <label for="product" class="block text-sm">Product</label>
-                    <select id="product" class="border p-2 rounded w-full" required></select>
+                    <label for="product" class="block font-medium mb-1">Product</label>
+                    <input list="product-list" id="product" name="product" required
+                        class="border border-gray-300 rounded p-2 w-48" autocomplete="off" />
                 </div>
                 <div>
-                    <label for="quantity" class="block text-sm">Quantity</label>
-                    <input id="quantity" type="number" class="border p-2 rounded w-full" required />
+                    <label for="quantity" class="block font-medium mb-1">Quantity</label>
+                    <input type="number" id="quantity" name="quantity" min="1" required
+                        class="border border-gray-300 rounded p-2 w-28" />
                 </div>
                 <div>
-                    <label for="discount" class="block text-sm">Discount (%)</label>
-                    <input id="discount" type="number" class="border p-2 rounded w-full" min="0" max="100" value="0" />
+                    <label for="discount" class="block font-medium mb-1">Discount (%)</label>
+                    <input type="number" id="discount" name="discount" min="0" max="100" value="0"
+                        class="border border-gray-300 rounded p-2 w-28" />
                 </div>
                 <div>
-                    <label for="payment-method" class="block text-sm">Payment Method</label>
-                    <select id="payment-method" class="border p-2 rounded w-full" required>
+                    <label for="payment-method" class="block font-medium mb-1">Payment Method</label>
+                    <select id="payment-method" name="payment-method" required
+                        class="border border-gray-300 rounded p-2 w-36">
+                        <option value="">Select</option>
                         <option value="cash">Cash</option>
-                        <option value="momo">Mobile Money</option>
+                        <option value="momo">Momo Pay</option>
                     </select>
                 </div>
                 <div id="momo-id-field" class="hidden">
-                    <label for="momo-id" class="block text-sm">Momo Pay ID</label>
-                    <input id="momo-id" type="text" class="border p-2 rounded w-full" />
+                    <label for="momo-id" class="block font-medium mb-1">Momo Pay ID</label>
+                    <input type="text" id="momo-id" name="momo-id" class="border border-gray-300 rounded p-2 w-48"
+                        autocomplete="off" />
                 </div>
                 <div>
-                    <label for="customer" class="block text-sm">Customer</label>
-                    <select id="customer" class="border p-2 rounded w-full" required></select>
+                    <label for="customer" class="block font-medium mb-1">Customer</label>
+                    <input list="customer-list" id="customer" name="customer" required
+                        class="border border-gray-300 rounded p-2 w-48" autocomplete="off" />
+                    <datalist id="customer-list"></datalist>
                 </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500">Record
+                <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded">Record
                     Sale</button>
             </form>
         </section>
 
-        <!-- Stock Management Page -->
-        <section id="stock" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Stock Management</h1>
-            <form id="stock-management-form" class="mb-4">
+        <!-- Sales Ledgers -->
+        <section class="bg-white p-6 rounded shadow">
+            <h2 class="text-xl font-semibold mb-4">Sales Ledgers</h2>
+
+            <div class="mb-4">
+                <h3 class="font-semibold mb-2">Cash Ledger</h3>
+                <table class="w-full border border-gray-300 rounded overflow-hidden text-sm">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="border border-gray-300 px-2 py-1">Date</th>
+                            <th class="border border-gray-300 px-2 py-1">Product</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Qty</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Discount %</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Amount (RWF)</th>
+                            <th class="border border-gray-300 px-2 py-1">Customer</th>
+                            <th class="border border-gray-300 px-2 py-1">Payment Method</th>
+                            <th class="border border-gray-300 px-2 py-1">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cash-ledger-body"></tbody>
+                </table>
+            </div>
+
+            <div>
+                <h3 class="font-semibold mb-2">Momo Pay Ledger</h3>
+                <table class="w-full border border-gray-300 rounded overflow-hidden text-sm">
+                    <thead class="bg-gray-200">
+                        <tr>
+                            <th class="border border-gray-300 px-2 py-1">Date</th>
+                            <th class="border border-gray-300 px-2 py-1">Product</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Qty</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Discount %</th>
+                            <th class="border border-gray-300 px-2 py-1 text-right">Amount (RWF)</th>
+                            <th class="border border-gray-300 px-2 py-1">Customer</th>
+                            <th class="border border-gray-300 px-2 py-1">Momo ID</th>
+                            <th class="border border-gray-300 px-2 py-1">Payment Method</th>
+                            <th class="border border-gray-300 px-2 py-1">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="momo-ledger-body"></tbody>
+                </table>
+            </div>
+        </section>
+
+    </div>
+
+    <!-- Edit Modal -->
+    <div id="edit-modal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center hidden z-50">
+        <div class="bg-white rounded p-6 w-full max-w-lg relative">
+            <h2 class="text-xl font-semibold mb-4">Edit Transaction</h2>
+            <form id="edit-form" class="space-y-4">
                 <div>
-                    <label for="stock-product" class="block text-sm">Product</label>
-                    <select id="stock-product" class="border p-2 rounded w-full" required></select>
-                    <p class="mt-1 text-sm text-gray-600" id="current-stock-display">Current Stock: 0 units</p>
+                    <label for="edit-product" class="block font-medium mb-1">Product</label>
+                    <input list="product-list" id="edit-product" name="edit-product" required
+                        class="border border-gray-300 rounded p-2 w-full" autocomplete="off" />
                 </div>
                 <div>
-                    <label for="add-stock-quantity" class="block text-sm">Quantity to Add</label>
-                    <input id="add-stock-quantity" type="number" class="border p-2 rounded w-full" required />
+                    <label for="edit-quantity" class="block font-medium mb-1">Quantity</label>
+                    <input type="number" id="edit-quantity" name="edit-quantity" min="1" required
+                        class="border border-gray-300 rounded p-2 w-full" />
                 </div>
-                <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-500 mt-2">Add
-                    Stock</button>
+                <div>
+                    <label for="edit-discount" class="block font-medium mb-1">Discount (%)</label>
+                    <input type="number" id="edit-discount" name="edit-discount" min="0" max="100" value="0"
+                        class="border border-gray-300 rounded p-2 w-full" />
+                </div>
+                <div>
+                    <label for="edit-payment-method" class="block font-medium mb-1">Payment Method</label>
+                    <select id="edit-payment-method" name="edit-payment-method" required
+                        class="border border-gray-300 rounded p-2 w-full">
+                        <option value="">Select</option>
+                        <option value="cash">Cash</option>
+                        <option value="momo">Momo Pay</option>
+                    </select>
+                </div>
+                <div id="edit-momo-id-field" class="hidden">
+                    <label for="edit-momo-id" class="block font-medium mb-1">Momo Pay ID</label>
+                    <input type="text" id="edit-momo-id" name="edit-momo-id"
+                        class="border border-gray-300 rounded p-2 w-full" autocomplete="off" />
+                </div>
+                <div>
+                    <label for="edit-customer" class="block font-medium mb-1">Customer</label>
+                    <input list="customer-list" id="edit-customer" name="edit-customer" required
+                        class="border border-gray-300 rounded p-2 w-full" autocomplete="off" />
+                </div>
+                <div>
+                    <label for="edit-date" class="block font-medium mb-1">Date & Time</label>
+                    <input type="datetime-local" id="edit-date" name="edit-date" required
+                        class="border border-gray-300 rounded p-2 w-full" />
+                </div>
+                <div class="flex justify-end space-x-3 pt-4 border-t border-gray-200">
+                    <button type="button" id="close-edit-modal"
+                        class="px-4 py-2 rounded bg-gray-400 hover:bg-gray-500 text-white">Cancel</button>
+                    <button type="submit"
+                        class="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white">Save</button>
+                </div>
             </form>
-        </section>
-
-        <!-- Cash Ledger Page -->
-        <section id="cash-ledger" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Cash Ledger</h1>
-            <table id="cash-ledger-table" class="w-full mt-4 border-collapse">
-                <thead>
-                    <tr>
-                        <th class="border p-2 text-left">Date</th>
-                        <th class="border p-2 text-left">Product</th>
-                        <th class="border p-2 text-left">Quantity</th>
-                        <th class="border p-2 text-left">Amount</th>
-                        <th class="border p-2 text-left">Customer</th>
-                        <th class="border p-2 text-left">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="cash-ledger-body"></tbody>
-            </table>
-        </section>
-
-        <!-- Momo Ledger Page -->
-        <section id="momo-ledger" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Momo Ledger</h1>
-            <table id="momo-ledger-table" class="w-full mt-4 border-collapse">
-                <thead>
-                    <tr>
-                        <th class="border p-2 text-left">Date</th>
-                        <th class="border p-2 text-left">Product</th>
-                        <th class="border p-2 text-left">Quantity</th>
-                        <th class="border p-2 text-left">Amount</th>
-                        <th class="border p-2 text-left">Customer</th>
-                        <th class="border p-2 text-left">Momo Pay ID</th>
-                        <th class="border p-2 text-left">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="momo-ledger-body"></tbody>
-            </table>
-        </section>
-
-        <!-- Sales Ledger Page -->
-        <section id="sales-ledger" class="section-content mb-12 hidden">
-            <h1 class="text-3xl font-semibold mb-4">Sales Ledger</h1>
-            <table id="sales-ledger-table" class="w-full mt-4 border-collapse">
-                <thead>
-                    <tr>
-                        <th class="border p-2 text-left">Date</th>
-                        <th class="border p-2 text-left">Product</th>
-                        <th class="border p-2 text-left">Quantity</th>
-                        <th class="border p-2 text-left">Amount</th>
-                        <th class="border p-2 text-left">Payment</th>
-                        <th class="border p-2 text-left">Customer</th>
-                        <th class="border p-2 text-left">Momo Pay ID</th>
-                        <th class="border p-2 text-left">Action</th>
-                    </tr>
-                </thead>
-                <tbody id="sales-ledger-body"></tbody>
-            </table>
-        </section>
-
-        <!-- Add Customer Button -->
-        <div class="mt-4">
-            <button id="add-customer-button" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-500">Add
-                Customer</button>
         </div>
     </div>
 
     <script>
-        // Initial product list with starting stock and unit price
-        const products = [
-            { name: 'Cylinder A', unitPrice: 100, stock: 50, startingInventory: 50 },
-            { name: 'Cylinder B', unitPrice: 125, stock: 75, startingInventory: 75 },
+        // Data structures
+        let products = [];
+        let customers = [];
+        let cashLedger = [];
+        let momoLedger = [];
+
+        // Default products to seed if none in storage
+        const defaultProducts = [
+            { name: "Gas Cylinder 6kg", unitPrice: 12000, startingInventory: 50, addedStock: 0 },
+            { name: "Gas Cylinder 12kg", unitPrice: 22000, startingInventory: 30, addedStock: 0 },
+            { name: "Gas Cylinder 24kg", unitPrice: 38000, startingInventory: 20, addedStock: 0 }
         ];
 
-        // Initialize customers storage if empty
-        if (!localStorage.getItem('customers')) localStorage.setItem('customers', JSON.stringify([]));
-        if (!localStorage.getItem('cash-ledger')) localStorage.setItem('cash-ledger', JSON.stringify([]));
-        if (!localStorage.getItem('momo-ledger')) localStorage.setItem('momo-ledger', JSON.stringify([]));
-        if (!localStorage.getItem('sales-ledger')) localStorage.setItem('sales-ledger', JSON.stringify([]));
+        // LocalStorage keys
+        const STORAGE_KEYS = {
+            PRODUCTS: 'gsm_products',
+            CUSTOMERS: 'gsm_customers',
+            CASH_LEDGER: 'gsm_cashLedger',
+            MOMO_LEDGER: 'gsm_momoLedger'
+        };
 
-        // Show page helper
-        function showPage(page) {
-            document.querySelectorAll('.section-content').forEach(sec => sec.classList.add('hidden'));
-            document.getElementById(page).classList.remove('hidden');
-            if (page === 'summary') {
-                updateStockDisplay();
-                updateSummary();
-                updateInventoryMinusSold();
-            }
-            if (page === 'cash-ledger' || page === 'momo-ledger' || page === 'sales-ledger') {
-                updateLedgers();
-            }
-            if (page === 'stock') {
-                updateCurrentStockDisplay();
-            }
+        // Utility: format number as RWF currency
+        function formatRWF(amount) {
+            return "RWF " + amount.toLocaleString('en-US', { minimumFractionDigits: 0 });
         }
 
-        // Populate product selects
-        function populateProductSelects() {
-            ['product', 'stock-product'].forEach(id => {
-                const sel = document.getElementById(id);
-                sel.innerHTML = '';
-                products.forEach(p => {
-                    const opt = document.createElement('option');
-                    opt.value = p.name;
-                    opt.textContent = p.name;
-                    sel.appendChild(opt);
-                });
-            });
+        // Save data to localStorage
+        function saveData() {
+            localStorage.setItem(STORAGE_KEYS.PRODUCTS, JSON.stringify(products));
+            localStorage.setItem(STORAGE_KEYS.CUSTOMERS, JSON.stringify(customers));
+            localStorage.setItem(STORAGE_KEYS.CASH_LEDGER, JSON.stringify(cashLedger));
+            localStorage.setItem(STORAGE_KEYS.MOMO_LEDGER, JSON.stringify(momoLedger));
         }
 
-        // Load customers to selects
-        function loadCustomers() {
-            const customers = JSON.parse(localStorage.getItem('customers')) || [];
-            ['customer'].forEach(id => {
-                const sel = document.getElementById(id);
-                sel.innerHTML = '';
-                customers.forEach(c => {
-                    const opt = document.createElement('option');
-                    opt.value = c.name;
-                    opt.textContent = c.name;
-                    sel.appendChild(opt);
-                });
-            });
+        // Load data from localStorage or seed defaults
+        function loadData() {
+            products = JSON.parse(localStorage.getItem(STORAGE_KEYS.PRODUCTS)) || JSON.parse(JSON.stringify(defaultProducts));
+            customers = JSON.parse(localStorage.getItem(STORAGE_KEYS.CUSTOMERS)) || [];
+            cashLedger = JSON.parse(localStorage.getItem(STORAGE_KEYS.CASH_LEDGER)) || [];
+            momoLedger = JSON.parse(localStorage.getItem(STORAGE_KEYS.MOMO_LEDGER)) || [];
         }
 
-        // Update stock display on summary page
-        function updateStockDisplay() {
-            const stockDiv = document.getElementById('product-stock');
-            stockDiv.innerHTML = '';
+        // Calculate total sold cylinders of a product (sum quantity from both ledgers)
+        function totalSold(productName) {
+            let soldCash = cashLedger.filter(t => t.product === productName)
+                .reduce((sum, t) => sum + t.quantity, 0);
+            let soldMomo = momoLedger.filter(t => t.product === productName)
+                .reduce((sum, t) => sum + t.quantity, 0);
+            return soldCash + soldMomo;
+        }
+
+        // Calculate current stock of product (starting + added - sold)
+        function currentStock(productName) {
+            let product = products.find(p => p.name === productName);
+            if (!product) return 0;
+            return product.startingInventory + product.addedStock - totalSold(productName);
+        }
+
+        // Load product datalist options
+        function loadProductList() {
+            const productList = document.getElementById('product-list');
+            productList.innerHTML = '';
             products.forEach(p => {
-                const pElem = document.createElement('p');
-                pElem.textContent = `${p.name}: ${p.stock} units`;
-                stockDiv.appendChild(pElem);
+                let option = document.createElement('option');
+                option.value = p.name;
+                productList.appendChild(option);
             });
         }
 
-        // Update Current Stock display on Stock Management page
-        function updateCurrentStockDisplay() {
-            const productSelect = document.getElementById('stock-product');
-            const stockDisplay = document.getElementById('current-stock-display');
-            const selectedProduct = products.find(p => p.name === productSelect.value);
-            stockDisplay.textContent = `Current Stock: ${selectedProduct ? selectedProduct.stock : 0} units`;
+        // Load customer datalist options
+        function loadCustomerList() {
+            const customerList = document.getElementById('customer-list');
+            customerList.innerHTML = '';
+            customers.forEach(c => {
+                let option = document.createElement('option');
+                option.value = c.name;
+                customerList.appendChild(option);
+            });
         }
 
-        // Update stock quantity
-        function updateStock(productName, quantityChange) {
-            const product = products.find(p => p.name === productName);
-            if (product) {
-                product.stock += quantityChange;
-                if (product.stock < 0) product.stock = 0;
-            }
+        // Update current stock summary table
+        function updateStockSummary() {
+            const tbody = document.getElementById('stock-summary-body');
+            tbody.innerHTML = '';
+            products.forEach(p => {
+                let tr = document.createElement('tr');
+                tr.classList.add('even:bg-gray-50');
+                tr.innerHTML = `
+        <td class="border border-gray-300 px-3 py-1">${p.name}</td>
+        <td class="border border-gray-300 px-3 py-1 text-right">${p.startingInventory}</td>
+        <td class="border border-gray-300 px-3 py-1 text-right">${p.addedStock}</td>
+        <td class="border border-gray-300 px-3 py-1 text-right">${totalSold(p.name)}</td>
+        <td class="border border-gray-300 px-3 py-1 text-right font-semibold">${currentStock(p.name)}</td>
+      `;
+                tbody.appendChild(tr);
+            });
         }
 
-        // Record transaction helper
-        function recordTransaction(paymentMethod, product, quantity, amount, customer, momoId = '') {
-            const date = new Date().toLocaleString();
-            const transaction = { id: generateId(), date, product, quantity, amount, customer, momoId };
-
-            // Save to sales ledger
-            let salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
-            salesLedger.push({ ...transaction, paymentMethod });
-            localStorage.setItem('sales-ledger', JSON.stringify(salesLedger));
-
-            if (paymentMethod === 'cash') {
-                let cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
-                cashLedger.push(transaction);
-                localStorage.setItem('cash-ledger', JSON.stringify(cashLedger));
-            } else if (paymentMethod === 'momo') {
-                let momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
-                momoLedger.push(transaction);
-                localStorage.setItem('momo-ledger', JSON.stringify(momoLedger));
-            }
+        // Render ledger rows for a given ledger array & table body element
+        function renderLedger(ledger, tbodyId, isMomo = false) {
+            const tbody = document.getElementById(tbodyId);
+            tbody.innerHTML = '';
+            ledger.forEach(t => {
+                const date = new Date(t.date);
+                let dateStr = date.toLocaleString('en-GB', { hour12: false });
+                tbody.innerHTML += `
+        <tr class="even:bg-gray-50" data-id="${t.id}" data-ledger="${isMomo ? 'momo' : 'cash'}">
+          <td class="border border-gray-300 px-2 py-1">${dateStr}</td>
+          <td class="border border-gray-300 px-2 py-1">${t.product}</td>
+          <td class="border border-gray-300 px-2 py-1 text-right">${t.quantity}</td>
+          <td class="border border-gray-300 px-2 py-1 text-right">${t.discount.toFixed(1)}</td>
+          <td class="border border-gray-300 px-2 py-1 text-right">${formatRWF(Math.round(t.amount))}</td>
+          <td class="border border-gray-300 px-2 py-1">${t.customer}</td>
+          ${isMomo ? `<td class="border border-gray-300 px-2 py-1">${t.momoId || ''}</td>` : ''}
+          <td class="border border-gray-300 px-2 py-1 capitalize">${t.paymentMethod}</td>
+          <td class="border border-gray-300 px-2 py-1 space-x-2 text-center">
+            <button class="edit-btn text-blue-600 hover:underline text-sm">Edit</button>
+            <button class="delete-btn text-red-600 hover:underline text-sm">Delete</button>
+          </td>
+        </tr>
+      `;
+            });
         }
 
-        // Generate unique id for transactions
+        // Generate unique ID
         function generateId() {
-            return '_' + Math.random().toString(36).substr(2, 9);
+            return 'id-' + Date.now() + '-' + Math.floor(Math.random() * 1000);
         }
 
-        // Update ledger tables with delete buttons
-        function updateLedgers() {
-            // Cash ledger
-            const cashLedgerBody = document.getElementById('cash-ledger-body');
-            const cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
-            cashLedgerBody.innerHTML = '';
-            cashLedger.forEach(t => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td class="border p-2">${t.date}</td>
-                <td class="border p-2">${t.product}</td>
-                <td class="border p-2">${t.quantity}</td>
-                <td class="border p-2">$${t.amount.toFixed(2)}</td>
-                <td class="border p-2">${t.customer}</td>
-                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('cash', '${t.id}')">Delete</button></td>
-                `;
-                cashLedgerBody.appendChild(tr);
-            });
-
-            // Momo ledger
-            const momoLedgerBody = document.getElementById('momo-ledger-body');
-            const momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
-            momoLedgerBody.innerHTML = '';
-            momoLedger.forEach(t => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td class="border p-2">${t.date}</td>
-                <td class="border p-2">${t.product}</td>
-                <td class="border p-2">${t.quantity}</td>
-                <td class="border p-2">$${t.amount.toFixed(2)}</td>
-                <td class="border p-2">${t.customer}</td>
-                <td class="border p-2">${t.momoId}</td>
-                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('momo', '${t.id}')">Delete</button></td>
-                `;
-                momoLedgerBody.appendChild(tr);
-            });
-
-            // Sales ledger
-            const salesLedgerBody = document.getElementById('sales-ledger-body');
-            const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
-            salesLedgerBody.innerHTML = '';
-            salesLedger.forEach(t => {
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                <td class="border p-2">${t.date}</td>
-                <td class="border p-2">${t.product}</td>
-                <td class="border p-2">${t.quantity}</td>
-                <td class="border p-2">$${t.amount.toFixed(2)}</td>
-                <td class="border p-2">${t.paymentMethod}</td>
-                <td class="border p-2">${t.customer}</td>
-                <td class="border p-2">${t.momoId || ''}</td>
-                <td class="border p-2"><button class="text-red-600 hover:underline" onclick="deleteTransaction('sales', '${t.id}')">Delete</button></td>
-                `;
-                salesLedgerBody.appendChild(tr);
-            });
-
-            updateSummary();
-            updateInventoryMinusSold();
-            updateStockDisplay();
-            updateCurrentStockDisplay();
-        }
-
-        // Delete transaction helper
-        function deleteTransaction(ledgerType, transactionId) {
-            if (!confirm('Are you sure you want to delete this transaction?')) return;
-
-            // Remove from ledger arrays
-            let ledger = JSON.parse(localStorage.getItem(`${ledgerType}-ledger`)) || [];
-            const transaction = ledger.find(t => t.id === transactionId);
-            if (!transaction) {
-                alert('Transaction not found.');
-                return;
-            }
-
-            ledger = ledger.filter(t => t.id !== transactionId);
-            localStorage.setItem(`${ledgerType}-ledger`, JSON.stringify(ledger));
-
-            // Also remove from sales-ledger if ledgerType is cash or momo
-            if (ledgerType === 'cash' || ledgerType === 'momo') {
-                let salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
-                salesLedger = salesLedger.filter(t => t.id !== transactionId);
-                localStorage.setItem('sales-ledger', JSON.stringify(salesLedger));
-            } else if (ledgerType === 'sales') {
-                // Delete also from cash or momo ledger if exists
-                let cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
-                let momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
-                cashLedger = cashLedger.filter(t => t.id !== transactionId);
-                momoLedger = momoLedger.filter(t => t.id !== transactionId);
-                localStorage.setItem('cash-ledger', JSON.stringify(cashLedger));
-                localStorage.setItem('momo-ledger', JSON.stringify(momoLedger));
-            }
-
-            // Revert stock
-            updateStock(transaction.product, transaction.quantity);
-
-            alert('Transaction deleted and stock updated.');
-            updateLedgers();
-        }
-
-        // Update Summary totals
-        function updateSummary() {
-            const cashLedger = JSON.parse(localStorage.getItem('cash-ledger')) || [];
-            const momoLedger = JSON.parse(localStorage.getItem('momo-ledger')) || [];
-            const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
-
-            const totalSales = salesLedger.reduce((acc, t) => acc + t.amount, 0);
-            const cashBalance = cashLedger.reduce((acc, t) => acc + t.amount, 0);
-            const momoBalance = momoLedger.reduce((acc, t) => acc + t.amount, 0);
-
-            document.getElementById('total-sales').textContent = `$${totalSales.toFixed(2)}`;
-            document.getElementById('cash-balance').textContent = `$${cashBalance.toFixed(2)}`;
-            document.getElementById('momo-balance').textContent = `$${momoBalance.toFixed(2)}`;
-        }
-
-        // Show Business Starting Inventory - Cylinders Sold
-        function updateInventoryMinusSold() {
-            const div = document.getElementById('inventory-minus-sold');
-            div.innerHTML = '';
-
-            products.forEach(product => {
-                const salesLedger = JSON.parse(localStorage.getItem('sales-ledger')) || [];
-                const totalSold = salesLedger
-                    .filter(t => t.product === product.name)
-                    .reduce((acc, t) => acc + t.quantity, 0);
-                const remaining = product.startingInventory - totalSold;
-                const pElem = document.createElement('p');
-                pElem.textContent = `${product.name}: ${remaining} units remaining (Starting: ${product.startingInventory}, Sold: ${totalSold})`;
-                div.appendChild(pElem);
-            });
-        }
-
-        // Handle sales form submission
-        document.getElementById('sales-form').addEventListener('submit', e => {
-            e.preventDefault();
-
-            const productName = document.getElementById('product').value;
-            const quantity = parseInt(document.getElementById('quantity').value);
-            const discountPercent = parseFloat(document.getElementById('discount').value) || 0;
-            const paymentMethod = document.getElementById('payment-method').value;
-            const momoId = document.getElementById('momo-id').value.trim();
-            const customer = document.getElementById('customer').value;
-
-            if (quantity <= 0) {
-                alert('Quantity must be greater than 0.');
-                return;
-            }
-
-            const product = products.find(p => p.name === productName);
+        // Save a new sale transaction
+        function addSaleTransaction(data) {
+            // Validate product exists
+            const product = products.find(p => p.name === data.product);
             if (!product) {
-                alert('Invalid product selected.');
-                return;
+                alert("Product not found in stock. Please add it first.");
+                return false;
             }
 
-            if (quantity > product.stock) {
-                alert('Not enough stock available.');
-                return;
+            // Validate stock availability
+            const available = currentStock(data.product);
+            if (data.quantity > available) {
+                alert(`Insufficient stock for ${data.product}. Available: ${available}`);
+                return false;
             }
 
-            // Calculate amount with discount
-            const priceBeforeDiscount = product.unitPrice * quantity;
-            const discountAmount = priceBeforeDiscount * (discountPercent / 100);
-            const amount = priceBeforeDiscount - discountAmount;
+            // Calculate amount after discount
+            const totalPrice = product.unitPrice * data.quantity;
+            const discountedPrice = totalPrice * (1 - data.discount / 100);
 
-            if (paymentMethod === 'momo' && !momoId) {
-                alert('Momo Pay ID is required for Mobile Money payments.');
-                return;
+            // Add customer if new
+            if (!customers.some(c => c.name.toLowerCase() === data.customer.toLowerCase())) {
+                customers.push({ name: data.customer });
             }
 
-            // Deduct stock
-            updateStock(productName, -quantity);
+            // Create transaction object
+            const transaction = {
+                id: generateId(),
+                date: new Date().toISOString(),
+                product: data.product,
+                quantity: data.quantity,
+                discount: data.discount,
+                amount: discountedPrice,
+                customer: data.customer,
+                paymentMethod: data.paymentMethod,
+                momoId: data.paymentMethod === 'momo' ? data.momoId : null
+            };
 
-            // Record transaction
-            recordTransaction(paymentMethod, productName, quantity, amount, customer, momoId);
+            // Add to correct ledger
+            if (data.paymentMethod === 'cash') {
+                cashLedger.push(transaction);
+            } else {
+                momoLedger.push(transaction);
+            }
 
-            alert('Sale recorded successfully.');
+            saveData();
+            updateAll();
+            return true;
+        }
 
-            e.target.reset();
-            document.getElementById('momo-id-field').classList.add('hidden');
-            updateStockDisplay();
-            updateCurrentStockDisplay();
-            updateSummary();
-            updateInventoryMinusSold();
-            updateLedgers();
+        // Update all UI parts (stock summary, ledgers, datalists)
+        function updateAll() {
+            loadProductList();
+            loadCustomerList();
+            updateStockSummary();
+            renderLedger(cashLedger, 'cash-ledger-body', false);
+            renderLedger(momoLedger, 'momo-ledger-body', true);
+        }
+
+        // Delete transaction from ledger
+        function deleteTransaction(id, ledgerType) {
+            if (!confirm("Are you sure you want to delete this transaction?")) return;
+            if (ledgerType === 'cash') {
+                cashLedger = cashLedger.filter(t => t.id !== id);
+            } else {
+                momoLedger = momoLedger.filter(t => t.id !== id);
+            }
+            saveData();
+            updateAll();
+        }
+
+        // Edit transaction modal management
+        const editModal = document.getElementById('edit-modal');
+        const editForm = document.getElementById('edit-form');
+        let currentEditId = null;
+        let currentEditLedger = null;
+
+        function openEditModal(id, ledgerType) {
+            currentEditId = id;
+            currentEditLedger = ledgerType;
+            const ledgerArray = ledgerType === 'cash' ? cashLedger : momoLedger;
+            const transaction = ledgerArray.find(t => t.id === id);
+            if (!transaction) {
+                alert("Transaction not found.");
+                return;
+            }
+            // Populate form fields
+            editForm['edit-product'].value = transaction.product;
+            editForm['edit-quantity'].value = transaction.quantity;
+            editForm['edit-discount'].value = transaction.discount;
+            editForm['edit-payment-method'].value = transaction.paymentMethod;
+            editForm['edit-customer'].value = transaction.customer;
+            editForm['edit-date'].value = transaction.date.substring(0, 16);
+            editForm['edit-momo-id'].value = transaction.momoId || '';
+
+            toggleEditMomoField(transaction.paymentMethod);
+
+            editModal.classList.remove('hidden');
+        }
+
+        function toggleMomoField() {
+            const paymentMethod = document.getElementById('payment-method').value;
+            const momoField = document.getElementById('momo-id-field');
+            if (paymentMethod === 'momo') {
+                momoField.classList.remove('hidden');
+                document.getElementById('momo-id').setAttribute('required', 'required');
+            } else {
+                momoField.classList.add('hidden');
+                document.getElementById('momo-id').removeAttribute('required');
+                document.getElementById('momo-id').value = '';
+            }
+        }
+
+        function toggleEditMomoField(paymentMethod) {
+            const momoField = document.getElementById('edit-momo-id-field');
+            const momoInput = document.getElementById('edit-momo-id');
+            if (paymentMethod === 'momo') {
+                momoField.classList.remove('hidden');
+                momoInput.setAttribute('required', 'required');
+            } else {
+                momoField.classList.add('hidden');
+                momoInput.removeAttribute('required');
+                momoInput.value = '';
+            }
+        }
+
+        // Event Listeners
+
+        // Toggle momo ID input on payment method change (record sale form)
+        document.getElementById('payment-method').addEventListener('change', toggleMomoField);
+
+        // Toggle momo ID input on payment method change (edit form)
+        document.getElementById('edit-payment-method').addEventListener('change', (e) => {
+            toggleEditMomoField(e.target.value);
         });
 
-        // Handle stock form submission
+        // Handle stock management form submit (add stock)
         document.getElementById('stock-management-form').addEventListener('submit', e => {
             e.preventDefault();
-            const productName = document.getElementById('stock-product').value;
-            const quantityToAdd = parseInt(document.getElementById('add-stock-quantity').value);
+            const productName = e.target['stock-product'].value.trim();
+            const qty = parseInt(e.target['add-stock-quantity'].value);
 
-            if (quantityToAdd <= 0) {
-                alert('Quantity to add must be greater than 0.');
+            if (!productName) return alert("Please enter/select a product.");
+            if (qty <= 0) return alert("Quantity must be at least 1.");
+
+            // Find product or create new
+            let product = products.find(p => p.name.toLowerCase() === productName.toLowerCase());
+            if (!product) {
+                // Add new product with zero startingInventory and addedStock = qty
+                product = { name: productName, unitPrice: 0, startingInventory: 0, addedStock: 0 };
+                products.push(product);
+                alert(`New product added. Please update unit price in code if needed.`);
+            }
+            product.addedStock += qty;
+
+            saveData();
+            updateAll();
+            e.target.reset();
+        });
+
+        // Handle record sale form submit
+        document.getElementById('sales-form').addEventListener('submit', e => {
+            e.preventDefault();
+            const data = {
+                product: e.target['product'].value.trim(),
+                quantity: parseInt(e.target['quantity'].value),
+                discount: parseFloat(e.target['discount'].value) || 0,
+                paymentMethod: e.target['payment-method'].value,
+                momoId: e.target['momo-id'].value.trim(),
+                customer: e.target['customer'].value.trim()
+            };
+
+            if (!data.product || !data.customer || !data.paymentMethod) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+            if (data.paymentMethod === 'momo' && !data.momoId) {
+                alert("Please enter Momo Pay ID.");
+                return;
+            }
+            if (data.quantity < 1) {
+                alert("Quantity must be at least 1.");
+                return;
+            }
+            if (data.discount < 0 || data.discount > 100) {
+                alert("Discount must be between 0 and 100.");
                 return;
             }
 
-            updateStock(productName, quantityToAdd);
-            alert(`Added ${quantityToAdd} units to ${productName}.`);
-            e.target.reset();
-            updateCurrentStockDisplay();
-            updateStockDisplay();
-            updateInventoryMinusSold();
-        });
-
-        // Show or hide Momo Pay ID field
-        document.getElementById('payment-method').addEventListener('change', e => {
-            if (e.target.value === 'momo') {
-                document.getElementById('momo-id-field').classList.remove('hidden');
-            } else {
-                document.getElementById('momo-id-field').classList.add('hidden');
+            if (addSaleTransaction(data)) {
+                alert("Sale recorded successfully.");
+                e.target.reset();
+                toggleMomoField();
             }
         });
 
-        // Add customer functionality
-        document.getElementById('add-customer-button').addEventListener('click', () => {
-            const name = prompt('Enter customer name:');
-            if (!name) return alert('Customer name is required.');
+        // Delegate ledger buttons (edit/delete)
+        document.addEventListener('click', e => {
+            if (e.target.classList.contains('delete-btn')) {
+                const tr = e.target.closest('tr');
+                const id = tr.dataset.id;
+                const ledgerType = tr.dataset.ledger;
+                deleteTransaction(id, ledgerType);
+            }
+            if (e.target.classList.contains('edit-btn')) {
+                const tr = e.target.closest('tr');
+                const id = tr.dataset.id;
+                const ledgerType = tr.dataset.ledger;
+                openEditModal(id, ledgerType);
+            }
+        });
 
-            const customers = JSON.parse(localStorage.getItem('customers')) || [];
-            if (customers.find(c => c.name.toLowerCase() === name.toLowerCase())) {
-                return alert('Customer already exists.');
+        // Close edit modal
+        document.getElementById('close-edit-modal').addEventListener('click', () => {
+            editModal.classList.add('hidden');
+            editForm.reset();
+            currentEditId = null;
+            currentEditLedger = null;
+        });
+
+        // Handle edit form submit
+        editForm.addEventListener('submit', e => {
+            e.preventDefault();
+            if (!currentEditId || !currentEditLedger) {
+                alert("No transaction selected.");
+                return;
+            }
+            const ledgerArray = currentEditLedger === 'cash' ? cashLedger : momoLedger;
+            const idx = ledgerArray.findIndex(t => t.id === currentEditId);
+            if (idx === -1) {
+                alert("Transaction not found.");
+                return;
             }
 
-            customers.push({ name });
-            localStorage.setItem('customers', JSON.stringify(customers));
-            alert('Customer added.');
-            loadCustomers();
+            const productName = editForm['edit-product'].value.trim();
+            const quantity = parseInt(editForm['edit-quantity'].value);
+            const discount = parseFloat(editForm['edit-discount'].value) || 0;
+            const paymentMethod = editForm['edit-payment-method'].value;
+            const momoId = editForm['edit-momo-id'].value.trim();
+            const customer = editForm['edit-customer'].value.trim();
+            const date = editForm['edit-date'].value;
+
+            if (!productName || !customer || !paymentMethod) {
+                alert("Please fill in all required fields.");
+                return;
+            }
+            if (paymentMethod === 'momo' && !momoId) {
+                alert("Please enter Momo Pay ID.");
+                return;
+            }
+            if (quantity < 1) {
+                alert("Quantity must be at least 1.");
+                return;
+            }
+            if (discount < 0 || discount > 100) {
+                alert("Discount must be between 0 and 100.");
+                return;
+            }
+
+            // Validate product exists
+            const product = products.find(p => p.name === productName);
+            if (!product) {
+                alert("Product not found in stock.");
+                return;
+            }
+
+            // Validate stock availability, considering current transaction quantity removed from stock calculation
+            const stockAvailable = currentStock(productName) + ledgerArray[idx].quantity;
+            if (quantity > stockAvailable) {
+                alert(`Insufficient stock for ${productName}. Available: ${stockAvailable}`);
+                return;
+            }
+
+            // Update transaction
+            const totalPrice = product.unitPrice * quantity;
+            const discountedPrice = totalPrice * (1 - discount / 100);
+
+            ledgerArray[idx] = {
+                ...ledgerArray[idx],
+                product: productName,
+                quantity,
+                discount,
+                amount: discountedPrice,
+                customer,
+                paymentMethod,
+                momoId: paymentMethod === 'momo' ? momoId : null,
+                date: new Date(date).toISOString()
+            };
+
+            saveData();
+            updateAll();
+            editModal.classList.add('hidden');
+            editForm.reset();
+            currentEditId = null;
+            currentEditLedger = null;
+            alert("Transaction updated successfully.");
         });
 
-        // Update current stock display when product changes in stock form
-        document.getElementById('stock-product').addEventListener('change', () => {
-            updateCurrentStockDisplay();
-        });
+        // Initialize UI
+        updateAll();
+        toggleMomoField();
 
-        // Initialization on page load
-        window.onload = () => {
-            populateProductSelects();
-            loadCustomers();
-            showPage('summary');
-            updateLedgers();
-        };
     </script>
+
 </body>
 
 </html>
